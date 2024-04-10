@@ -1,6 +1,8 @@
 package ro.pub.cs.systems.eim.Colocviu1_2;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -22,6 +24,7 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
     int mysum = 0;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
+    private ColocviuBroadcastReceiver receiver = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +56,7 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
             if (result.getResultCode() == RESULT_OK) {
                 Log.d("MAIN", "returned ok from second");
                 mysum = result.getData().getIntExtra(Constants.COMPUTED_SUM, 0);
+                startServiceIfNeeded();
                 Log.d("MAIN", "returned ok from second with sum: " + mysum);
                 Toast.makeText(getApplicationContext(), "SUM: " + mysum, Toast.LENGTH_LONG).show();
                 Log.d("TAG", "OK");
@@ -78,5 +82,45 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
             mysum = savedInstanceState.getInt(Constants.CT_SUM);
             sum_text_view.setText(String.valueOf(mysum));
         }
+    }
+
+    // D
+    private Intent serviceIntent = null;
+//    private ColocviuBroadcastReceiver receiver = null;
+
+    private void startServiceIfNeeded() {
+        int threshold = 10;
+        if (mysum > threshold) {
+            Log.d("D service", "startServiceIfNeeded entered");
+            if (serviceIntent == null) {
+                serviceIntent = new Intent(this, Colocviu1_2Service.class);
+                serviceIntent.putExtra(Constants.FINAL_SUM, mysum);
+                startService(serviceIntent);
+            }
+        }
+    }
+
+    // D
+    @Override
+    protected void onDestroy() {
+        if (serviceIntent != null)
+            stopService(serviceIntent);
+
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("HAHAHA");
+        receiver = new ColocviuBroadcastReceiver();
+        registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unregisterReceiver(receiver);
     }
 }

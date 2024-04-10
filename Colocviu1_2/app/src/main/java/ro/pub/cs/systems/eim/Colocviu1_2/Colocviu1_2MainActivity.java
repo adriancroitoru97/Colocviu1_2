@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class Colocviu1_2MainActivity extends AppCompatActivity {
@@ -17,6 +18,8 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
     Button add_button, compute_button;
     TextView sum_text_view;
     EditText number_edit_text;
+
+    int mysum = 0;
 
     ActivityResultLauncher<Intent> activityResultLauncher;
 
@@ -49,9 +52,9 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (result.getResultCode() == RESULT_OK) {
                 Log.d("MAIN", "returned ok from second");
-                int tmp = result.getData().getIntExtra(Constants.COMPUTED_SUM, 0);
-                Log.d("MAIN", "returned ok from second with sum: " + tmp);
-                Toast.makeText(getApplicationContext(), "SUM: " + tmp, Toast.LENGTH_LONG).show();
+                mysum = result.getData().getIntExtra(Constants.COMPUTED_SUM, 0);
+                Log.d("MAIN", "returned ok from second with sum: " + mysum);
+                Toast.makeText(getApplicationContext(), "SUM: " + mysum, Toast.LENGTH_LONG).show();
                 Log.d("TAG", "OK");
             }
         });
@@ -60,5 +63,20 @@ public class Colocviu1_2MainActivity extends AppCompatActivity {
             intent.putExtra(Constants.SUM_AS_STRING, sum_text_view.getText().toString());
             activityResultLauncher.launch(intent);
         });
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(Constants.CT_SUM, mysum);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(Constants.CT_SUM)) {
+            mysum = savedInstanceState.getInt(Constants.CT_SUM);
+            sum_text_view.setText(String.valueOf(mysum));
+        }
     }
 }
